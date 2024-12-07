@@ -1,3 +1,4 @@
+import { NowRequest, NowResponse } from '@vercel/node';
 import express from "express";
 import mongoose from "mongoose";
 import cloudinary from "./config/cloudinary";
@@ -10,7 +11,13 @@ dotenv.config();
 
 const app = express();
 const upload = multer({ dest: "uploads/" });
-
+const router = express.Router();
+router.get("/", (req, res) => {
+    res.send("Levie Art");
+});
+  
+  
+app.use(router);
 app.use(cors());
 app.use(express.json());
 
@@ -50,3 +57,6 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 });
 
 app.listen(5001, () => console.log("Server running on http://localhost:5001"));
+export default (req: NowRequest, res: NowResponse) => {
+    app(req, res);
+};
