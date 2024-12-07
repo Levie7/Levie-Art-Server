@@ -4,8 +4,7 @@
   "main": "index.ts",
   "scripts": {
     "dev": "yarn ts-node src/index.ts",
-    "build": "vercel build",
-    "deploy": "vercel deploy"
+    "deploy": "vercel"
   },
   "author": "Amelia Maya Christina",
   "license": "MIT",
@@ -21,6 +20,7 @@
   "devDependencies": {
     "@types/cors": "2.8.17",
     "@types/express": "5.0.0",
-    "@types/multer": "1.4.12"
+    "@types/multer": "1.4.12",
+    "vercel": "39.1.3"
   }
 }
