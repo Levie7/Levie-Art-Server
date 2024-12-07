@@ -1,15 +1,11 @@
 {
   "name": "levie-art-server",
   "version": "1.0.0",
-  "main": "index.ts",
-  "scripts": {
-    "dev": "yarn ts-node src/index.ts",
-    "deploy": "vercel"
-  },
   "author": "Amelia Maya Christina",
   "license": "MIT",
   "description": "",
   "dependencies": {
+    "@vercel/node": "^3.2.28",
     "cloudinary": "2.5.1",
     "cors": "2.8.5",
     "dotenv": "16.4.7",
@@ -21,6 +17,8 @@
     "@types/cors": "2.8.17",
     "@types/express": "5.0.0",
     "@types/multer": "1.4.12",
+    "@types/node": "^22.10.1",
+    "typescript": "^5.7.2",
     "vercel": "39.1.3"
   }
 }

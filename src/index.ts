@@ -4,14 +4,12 @@ import { ConnectMongoDB } from "./config/mongodb";
 import { Image } from "./models/Image";
 import multer from "multer";
 import cors from "cors";
-import api from './api/index';
 
 const app = express();
 const upload = multer({ dest: "uploads/" });
 
 app.use(cors());
 app.use(express.json());
-app.use("/api", api)
 
 ConnectMongoDB()
 
