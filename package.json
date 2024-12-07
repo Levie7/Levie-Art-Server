@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "yarn ts-node src/index.ts",
+    "build": "vercel build",
+    "deploy": "vercel deploy"
   },
   "author": "Amelia Maya Christina",
   "license": "MIT",
   "description": "",
   "dependencies": {
-    "@vercel/node": "^3.2.28",
     "cloudinary": "2.5.1",
     "cors": "2.8.5",
     "dotenv": "16.4.7",

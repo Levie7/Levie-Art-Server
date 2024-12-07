@@ -1,34 +1,19 @@
-import { NowRequest, NowResponse } from '@vercel/node';
 import express from "express";
-import mongoose from "mongoose";
 import cloudinary from "./config/cloudinary";
+import { ConnectMongoDB } from "./config/mongodb";
 import { Image } from "./models/Image";
 import multer from "multer";
 import cors from "cors";
-import dotenv from "dotenv";
-
-dotenv.config();
+import api from './api/index';
 
 const app = express();
 const upload = multer({ dest: "uploads/" });
-const router = express.Router();
-router.get("/", (req, res) => {
-    res.send("Levie Art");
-});
-  
-  
-app.use(router);
+
 app.use(cors());
 app.use(express.json());
+app.use("/api", api)
 
-const MONGO_URI = process.env.MONGO_URI || "";
-mongoose.connect(MONGO_URI)
-  .then(() => {
-    console.log("Connected to MongoDB");
-  })
-  .catch((err) => {
-    console.error("Error connecting to MongoDB", err);
-  });
+ConnectMongoDB()
 
 // Upload Endpoint
 app.post("/upload", upload.single("file"), async (req, res) => {
@@ -57,6 +42,3 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 });
 
 app.listen(5001, () => console.log("Server running on http://localhost:5001"));
-export default (req: NowRequest, res: NowResponse) => {
-    app(req, res);
-};
