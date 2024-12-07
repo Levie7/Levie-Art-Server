@@ -1,15 +1,13 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import express from "express";
 import { ConnectMongoDB } from "../src/config/mongodb";
-import cors from "cors";
 
-const app = express();
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  await ConnectMongoDB();
 
-app.use(cors());
-app.use(express.json());
-
-ConnectMongoDB()
-
-export default function handler(req: VercelRequest, res: VercelResponse) {
-  res.status(200).json({ message: 'This is the index endpoint!' });
+  // API logic di sini
+  res.status(200).json({ message: 'Hello from MongoDB-connected API!' });
 }
