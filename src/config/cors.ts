@@ -9,7 +9,7 @@ const PROD_FE = process.env.PROD_FE || "";
 
 // Middleware helper for CORS
 const corsMiddleware = cors({
-  origin: '*',
+  origin: [LOCAL_FE, PROD_FE],
   methods: ['GET', 'POST'], // HTTP methods yang diizinkan
   allowedHeaders: ['Content-Type'], // Header yang diizinkan
 });

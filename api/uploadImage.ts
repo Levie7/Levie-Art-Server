@@ -20,10 +20,7 @@ const uploadImage = async (req: VercelRequest, res: VercelResponse) => {
     const form = formidable();
 
     form.parse(req, async (err: any, fields: any, files: any) => {
-      console.log("Files:", files);
-      console.log("Fields:", fields);
       if (err) {
-        console.error("Formidable error:", err);
         return res.status(400).json({ error: 'Failed to process file' });
       }
 
@@ -38,10 +35,9 @@ const uploadImage = async (req: VercelRequest, res: VercelResponse) => {
       }
       // Baca file dari buffer
       const fileBuffer = await sharp(file.filepath).toBuffer();
-      console.log(fileBuffer)
+      
       // Dapatkan dimensi gambar menggunakan sharp
       const { width, height } = await sharp(fileBuffer).metadata();
-      console.log({width,height})
       
       // Kompres gambar menjadi JPG dan WebP
       const compressedBufferJPG = await sharp(fileBuffer)
@@ -95,7 +91,6 @@ const uploadImage = async (req: VercelRequest, res: VercelResponse) => {
       });
     });
   } catch (error: any) {
-    console.log("catch: "+error)
     res.status(500).json({ error: error.message });
   }
 };
