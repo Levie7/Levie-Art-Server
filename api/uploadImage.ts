@@ -20,8 +20,9 @@ const uploadImage = async (req: VercelRequest, res: VercelResponse) => {
     const form: any = new IncomingForm();
     form.uploadDir = './';
     form.keepExtensions = true;
-
     form.parse(req, async (err: any, fields: any, files: any) => {
+      console.log("Files:", files);
+      console.log("Fields:", fields);
       if (err) {
         return res.status(400).json({ error: 'Failed to process file' });
       }
@@ -41,7 +42,7 @@ const uploadImage = async (req: VercelRequest, res: VercelResponse) => {
 
       // Dapatkan dimensi gambar menggunakan sharp
       const { width, height } = await sharp(filePath).metadata();
-
+      console.log({width,height})
       // Compress gambar dan konversi ke buffer
       const compressedImageBuffer = await sharp(filePath)
         .jpeg({ quality: 80 }) // Kompresi dengan kualitas 80 untuk jpg
@@ -50,7 +51,7 @@ const uploadImage = async (req: VercelRequest, res: VercelResponse) => {
           quality: 80, // Kualitas gambar (semakin rendah, semakin kecil ukuran file)
         })
         .toBuffer(); // Convert menjadi buffer
-
+        console.log(compressedImageBuffer)
       // Tentukan public_id berdasarkan nama file
       const publicId = originalFileName.split('.')[0];
 
@@ -61,6 +62,7 @@ const uploadImage = async (req: VercelRequest, res: VercelResponse) => {
           public_id: publicId + '_jpg',
         },
         async (error, resultJPG: any) => {
+          console.log("jpg: "+error)
           if (error) {
             return res.status(500).json({ error: error.message });
           }
@@ -73,6 +75,7 @@ const uploadImage = async (req: VercelRequest, res: VercelResponse) => {
             },
             async (error, resultWEBP: any) => {
               if (error) {
+                console.log("webp: "+error)
                 return res.status(500).json({ error: error.message });
               }
 
@@ -106,6 +109,7 @@ const uploadImage = async (req: VercelRequest, res: VercelResponse) => {
       streamifier.createReadStream(compressedImageBuffer).pipe(uploadStreamJPG);
     });
   } catch (error: any) {
+    console.log("catch: "+error)
     res.status(500).json({ error: error.message });
   }
 };
