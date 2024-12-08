@@ -27,7 +27,7 @@ const uploadImage = async (req: VercelRequest, res: VercelResponse) => {
         return res.status(400).json({ error: 'Failed to process file' });
       }
 
-      const file = files.file as formidable.File;
+      const file = files.file[0] as formidable.File;
       if (!file) {
         return res.status(400).json({ error: 'No file uploaded' });
       }
@@ -36,10 +36,9 @@ const uploadImage = async (req: VercelRequest, res: VercelResponse) => {
       if (!title) {
         return res.status(400).json({ error: 'Title is required' });
       }
-
       // Baca file dari buffer
       const fileBuffer = await sharp(file.filepath).toBuffer();
-
+      console.log(fileBuffer)
       // Dapatkan dimensi gambar menggunakan sharp
       const { width, height } = await sharp(fileBuffer).metadata();
       console.log({width,height})
