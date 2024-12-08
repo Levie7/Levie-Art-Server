@@ -9,10 +9,10 @@ import { ConnectMongoDB } from '../src/config/mongodb';
 import { Image } from '../src/models/Image';
 import setupCORS from '../src/config/cors';
 
-const upload = async (req: VercelRequest, res: VercelResponse) => {
+const uploadImage = async (req: VercelRequest, res: VercelResponse) => {
   try {
     // Pastikan koneksi MongoDB hanya dilakukan sekali
-    await setupCORS(req,res)
+    await setupCORS(req, res)
     if (mongoose.connection.readyState === 0) {
       await ConnectMongoDB();
     }
@@ -110,4 +110,4 @@ const upload = async (req: VercelRequest, res: VercelResponse) => {
   }
 };
 
-export default upload;
+export default uploadImage;

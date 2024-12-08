@@ -3,7 +3,7 @@ import { ConnectMongoDB } from "../src/config/mongodb";
 import setupCORS from '../src/config/cors';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  await setupCORS(req,res)
+  await setupCORS(req, res)
   await ConnectMongoDB();
 
   // API logic di sini

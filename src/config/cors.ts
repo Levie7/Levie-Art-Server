@@ -9,9 +9,9 @@ const PROD_FE = process.env.PROD_FE || "";
 
 // Middleware helper for CORS
 const corsMiddleware = cors({
-  origin: [LOCAL_FE, PROD_FE],
+  origin: '*',
   methods: ['GET', 'POST'], // HTTP methods yang diizinkan
-  allowedHeaders: ['Content-Type', 'Authorization'], // Header yang diizinkan
+  allowedHeaders: ['Content-Type'], // Header yang diizinkan
 });
 
 function runMiddleware(req: VercelRequest, res: VercelResponse, fn: Function) {
@@ -31,6 +31,9 @@ export default async function setupCORS(req: VercelRequest, res: VercelResponse)
     // Jalankan middleware CORS
     await runMiddleware(req, res, corsMiddleware);
 
+    console.log('Request Headers:', req.headers);  
+    console.log("Local: "+LOCAL_FE);
+    console.log("Prod: "+PROD_FE);
     console.log("CORS setup success!");
   } catch (error: any) {
     res.status(500).json({ error: error.message });
