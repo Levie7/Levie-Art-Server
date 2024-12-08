@@ -1,7 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { IncomingForm } from 'formidable';
+import formidable from 'formidable';
 import mongoose from 'mongoose';
-import fs from 'fs';
 import sharp from 'sharp';
 import streamifier from 'streamifier';
 import cloudinary from '../src/config/cloudinary';
@@ -17,96 +16,84 @@ const uploadImage = async (req: VercelRequest, res: VercelResponse) => {
       await ConnectMongoDB();
     }
 
-    const form: any = new IncomingForm();
-    form.uploadDir = './';
-    form.keepExtensions = true;
+    // Konfigurasi Formidable
+    const form = formidable();
+
     form.parse(req, async (err: any, fields: any, files: any) => {
       console.log("Files:", files);
       console.log("Fields:", fields);
       if (err) {
+        console.error("Formidable error:", err);
         return res.status(400).json({ error: 'Failed to process file' });
       }
 
-      const file = files.file[0];
+      const file = files.file as formidable.File;
       if (!file) {
         return res.status(400).json({ error: 'No file uploaded' });
       }
 
-      const title = Array.isArray(fields.title) ? fields.title[0] : fields.title;
+      const title = fields.title as string;
       if (!title) {
         return res.status(400).json({ error: 'Title is required' });
       }
 
-      const filePath = file.filepath;
-      const originalFileName = file.originalFilename;
+      // Baca file dari buffer
+      const fileBuffer = await sharp(file.filepath).toBuffer();
 
       // Dapatkan dimensi gambar menggunakan sharp
-      const { width, height } = await sharp(filePath).metadata();
+      const { width, height } = await sharp(fileBuffer).metadata();
       console.log({width,height})
-      // Compress gambar dan konversi ke buffer
-      const compressedImageBuffer = await sharp(filePath)
-        .jpeg({ quality: 80 }) // Kompresi dengan kualitas 80 untuk jpg
-        .png({
-          compressionLevel: 9, // Nilai 0-9 (semakin tinggi, semakin kecil ukuran file)
-          quality: 80, // Kualitas gambar (semakin rendah, semakin kecil ukuran file)
-        })
-        .toBuffer(); // Convert menjadi buffer
-        console.log(compressedImageBuffer)
+      
+      // Kompres gambar menjadi JPG dan WebP
+      const compressedBufferJPG = await sharp(fileBuffer)
+        .jpeg({ quality: 80 })
+        .toBuffer();
+      const compressedBufferWebP = await sharp(fileBuffer)
+        .webp({ quality: 80 })
+        .toBuffer();
+
       // Tentukan public_id berdasarkan nama file
-      const publicId = originalFileName.split('.')[0];
+      const publicId = file.originalFilename?.split('.')[0] || 'untitled';
 
-      // Upload gambar terkompresi ke Cloudinary menggunakan upload_stream untuk JPG
-      const uploadStreamJPG = cloudinary.uploader.upload_stream(
-        {
-          format: 'jpg', // Format gambar untuk JPG
-          public_id: publicId + '_jpg',
-        },
-        async (error, resultJPG: any) => {
-          console.log("jpg: "+error)
-          if (error) {
-            return res.status(500).json({ error: error.message });
-          }
-
-          // Upload gambar terkompresi ke Cloudinary menggunakan upload_stream untuk WebP
-          const uploadStreamWebP = cloudinary.uploader.upload_stream(
-            {
-              format: 'webp', // Format gambar untuk WebP
-              public_id: publicId + '_webp',
-            },
-            async (error, resultWEBP: any) => {
-              if (error) {
-                console.log("webp: "+error)
-                return res.status(500).json({ error: error.message });
-              }
-
-              // Simpan URL gambar yang diupload di MongoDB
-              const newImage = new Image({
-                title,
-                webp_url: resultWEBP.secure_url,
-                jpg_url: resultJPG.secure_url,
-                width,
-                height,
-              });
-
-              await newImage.save();
-
-              // Clean up temporary file
-              fs.unlinkSync(filePath);
-
-              res.status(200).json({
-                message: 'Image uploaded successfully',
-                data: newImage,
-              });
+      // Upload ke Cloudinary untuk JPG
+      const resultJPG = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { format: 'jpg', public_id: `${publicId}_jpg` },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result);
             }
           );
+          streamifier.createReadStream(compressedBufferJPG).pipe(uploadStream);
+      });
 
-          // Mengubah buffer menjadi stream untuk WebP
-          streamifier.createReadStream(compressedImageBuffer).pipe(uploadStreamWebP);
-        }
-      );
+      // Upload ke Cloudinary untuk WebP
+      const resultWebP = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { format: 'webp', public_id: `${publicId}_webp` },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result);
+            }
+          );
+          streamifier.createReadStream(compressedBufferWebP).pipe(uploadStream);
+      });
 
-      // Mengubah buffer menjadi stream untuk JPG
-      streamifier.createReadStream(compressedImageBuffer).pipe(uploadStreamJPG);
+      // Simpan data ke MongoDB
+      const newImage = new Image({
+        title,
+        webp_url: (resultWebP as any).secure_url,
+        jpg_url: (resultJPG as any).secure_url,
+        width,
+        height,
+      });
+
+      await newImage.save();
+
+      res.status(200).json({
+        message: 'Image uploaded successfully',
+        data: newImage,
+      });
     });
   } catch (error: any) {
     console.log("catch: "+error)
