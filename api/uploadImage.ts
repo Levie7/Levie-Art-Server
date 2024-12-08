@@ -32,7 +32,7 @@ const uploadImage = async (req: VercelRequest, res: VercelResponse) => {
         return res.status(400).json({ error: 'No file uploaded' });
       }
 
-      const title = fields.title as string;
+      const title = Array.isArray(fields.title) ? fields.title[0] : fields.title;
       if (!title) {
         return res.status(400).json({ error: 'Title is required' });
       }
