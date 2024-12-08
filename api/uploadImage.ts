@@ -7,10 +7,12 @@ import streamifier from 'streamifier';
 import cloudinary from '../src/config/cloudinary';
 import { ConnectMongoDB } from '../src/config/mongodb';
 import { Image } from '../src/models/Image';
+import setupCORS from '../src/config/cors';
 
 const upload = async (req: VercelRequest, res: VercelResponse) => {
   try {
     // Pastikan koneksi MongoDB hanya dilakukan sekali
+    await setupCORS(req,res)
     if (mongoose.connection.readyState === 0) {
       await ConnectMongoDB();
     }
@@ -43,6 +45,10 @@ const upload = async (req: VercelRequest, res: VercelResponse) => {
       // Compress gambar dan konversi ke buffer
       const compressedImageBuffer = await sharp(filePath)
         .jpeg({ quality: 80 }) // Kompresi dengan kualitas 80 untuk jpg
+        .png({
+          compressionLevel: 9, // Nilai 0-9 (semakin tinggi, semakin kecil ukuran file)
+          quality: 80, // Kualitas gambar (semakin rendah, semakin kecil ukuran file)
+        })
         .toBuffer(); // Convert menjadi buffer
 
       // Tentukan public_id berdasarkan nama file
@@ -54,7 +60,7 @@ const upload = async (req: VercelRequest, res: VercelResponse) => {
           format: 'jpg', // Format gambar untuk JPG
           public_id: publicId + '_jpg',
         },
-        async (error, result) => {
+        async (error, resultJPG: any) => {
           if (error) {
             return res.status(500).json({ error: error.message });
           }
@@ -65,7 +71,7 @@ const upload = async (req: VercelRequest, res: VercelResponse) => {
               format: 'webp', // Format gambar untuk WebP
               public_id: publicId + '_webp',
             },
-            async (error, result: any) => {
+            async (error, resultWEBP: any) => {
               if (error) {
                 return res.status(500).json({ error: error.message });
               }
@@ -73,8 +79,8 @@ const upload = async (req: VercelRequest, res: VercelResponse) => {
               // Simpan URL gambar yang diupload di MongoDB
               const newImage = new Image({
                 title,
-                webp_url: result.secure_url,
-                jpg_url: result.secure_url, // Anda bisa mengganti jika menggunakan format lain
+                webp_url: resultWEBP.secure_url,
+                jpg_url: resultJPG.secure_url,
                 width,
                 height,
               });

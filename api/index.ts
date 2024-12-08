@@ -1,11 +1,9 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { ConnectMongoDB } from "../src/config/mongodb";
+import setupCORS from '../src/config/cors';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
+  await setupCORS(req,res)
   await ConnectMongoDB();
 
   // API logic di sini
