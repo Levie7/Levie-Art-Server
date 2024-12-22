@@ -8,6 +8,14 @@ import { ConnectMongoDB } from '../src/config/mongodb';
 import { Image } from '../src/models/Image';
 import setupCORS from '../src/config/cors';
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb', // Adjust the size limit as necessary (e.g., 10MB, 20MB)
+    },
+  },
+};
+
 const uploadImage = async (req: VercelRequest, res: VercelResponse) => {
   try {
     // Pastikan koneksi MongoDB hanya dilakukan sekali
