@@ -8,6 +8,10 @@
     ],
     "routes": [
         {
+          "src": "/api/portfolio",
+          "dest": "api/portfolio.ts"
+        },
+        {
             "src": "/api/uploadImage",
             "dest": "api/uploadImage.ts"
         }
