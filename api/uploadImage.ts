@@ -11,7 +11,7 @@ import setupCORS from '../src/config/cors';
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '10mb', // Adjust the size limit as necessary (e.g., 10MB, 20MB)
+      sizeLimit: '50mb', // Adjust the size limit as necessary (e.g., 10MB, 20MB)
     },
   },
 };
